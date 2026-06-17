@@ -1,0 +1,33 @@
+# Dependencies (reinstallable via `npm install`; never committed)
+node_modules/
+
+# Build output
+dist/
+build/
+*.tsbuildinfo
+
+# Environment / secrets — NEVER commit these (admin token lives here)
+.env
+.env.*
+!.env.example
+
+# Local SQLite database files (Prisma) — local data, not source
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+prisma/*.db
+prisma/migrations/dev.db*
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Editor / OS noise
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+*.swp
