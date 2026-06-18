@@ -1,0 +1,81 @@
+// Prisma schema for the Pokémon Team Showcase.
+// Docs: https://pris.ly/d/prisma-schema
+//
+// The database is the source of *structured* truth. The Showdown paste text is
+// only an editing interface (Phase 3): we parse it into the rows below so we can
+// later query species/items/moves for 3D rendering and battle analytics.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+// A competitive team. Up to 6 members.
+model Team {
+  id         Int      @id @default(autoincrement())
+  name       String
+  // generation is FUNCTIONAL, not cosmetic: it's required to parse the paste
+  // correctly (move legality / mechanics differ by gen) and to drive validation.
+  generation Int
+  format     String? // e.g. "gen9ou" — organizational only, nullable for now
+  tier       String? // organizational only, nullable for now
+  notes      String?
+  rawPaste   String? // original pasted text, kept for fidelity
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  members TeamMember[]
+  battles Battle[]
+
+  // NOTE: no `ownerId` yet — single-user for now. Adding a User relation later is
+  // an additive change (a nullable ownerId), so this stays migration-friendly.
+}
+
+// One Pokémon on a team.
+model TeamMember {
+  id     Int  @id @default(autoincrement())
+  teamId Int
+  team   Team @relation(fields: [teamId], references: [id], onDelete: Cascade)
+
+  slot     Int // 1..6 — display order within the team
+  species  String
+  nickname String?
+  item     String?
+  ability  String?
+  nature   String?
+  level    Int     @default(100)
+  gender   String?
+  teraType String? // gen 9 only
+
+  // moves/evs/ivs are small fixed-shape bundles, stored as JSON:
+  //   moves: string[]                       e.g. ["Stealth Rock", "Earthquake"]
+  //   evs/ivs: { hp, atk, def, spa, spd, spe }
+  // We query teams by `species` (above), not by individual moves/stats, so a
+  // structured blob here is the pragmatic, conventional choice.
+  moves Json
+  evs   Json?
+  ivs   Json?
+
+  // A team can't have two Pokémon in the same slot.
+  @@unique([teamId, slot])
+}
+
+// One recorded battle for a team. Created now, POPULATED LATER by the browser
+// extension (Phase 6). Every result field is nullable until then.
+model Battle {
+  id     Int  @id @default(autoincrement())
+  teamId Int
+  team   Team @relation(fields: [teamId], references: [id], onDelete: Cascade)
+
+  won          Boolean?
+  opponent     String?
+  format       String?
+  pokemonAlive Int? // our Pokémon still alive at the end (for "avg alive at win")
+  peakRank     Int?
+  playedAt     DateTime?
+  createdAt    DateTime  @default(now())
+}
