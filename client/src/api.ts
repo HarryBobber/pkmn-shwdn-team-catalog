@@ -52,3 +52,54 @@ export async function fetchTeams(): Promise<Team[]> {
   }
   return res.json();
 }
+
+// What the owner submits from the create/edit form. The server parses `paste`
+// into the structured members; the other fields are entered by hand.
+export interface TeamInput {
+  name: string;
+  generation: number;
+  format: string;
+  notes: string;
+  paste: string;
+}
+
+// Shared helper for the owner-only write requests. Attaches the admin token and
+// turns the server's { error } JSON into a thrown Error with a readable message.
+async function writeRequest(
+  method: "POST" | "PUT" | "DELETE",
+  path: string,
+  token: string,
+  body?: unknown,
+): Promise<Response> {
+  const res = await fetch(`${API_URL}${path}`, {
+    method,
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: body === undefined ? undefined : JSON.stringify(body),
+  });
+  if (!res.ok) {
+    const data = (await res.json().catch(() => null)) as { error?: string } | null;
+    throw new Error(data?.error ?? `Request failed (HTTP ${res.status})`);
+  }
+  return res;
+}
+
+export async function createTeam(input: TeamInput, token: string): Promise<Team> {
+  const res = await writeRequest("POST", "/teams", token, input);
+  return res.json();
+}
+
+export async function updateTeam(
+  id: number,
+  input: TeamInput,
+  token: string,
+): Promise<Team> {
+  const res = await writeRequest("PUT", `/teams/${id}`, token, input);
+  return res.json();
+}
+
+export async function deleteTeam(id: number, token: string): Promise<void> {
+  await writeRequest("DELETE", `/teams/${id}`, token);
+}

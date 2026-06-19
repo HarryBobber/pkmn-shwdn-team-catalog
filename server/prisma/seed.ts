@@ -168,6 +168,37 @@ async function main() {
       generation: 9,
       format: "gen9ou",
       notes: "A short standard-sets sample team.",
+      rawPaste: `Great Tusk @ Booster Energy
+Ability: Protosynthesis
+Tera Type: Steel
+EVs: 252 Atk / 4 Def / 252 Spe
+Jolly Nature
+- Headlong Rush
+- Close Combat
+- Rapid Spin
+- Stealth Rock
+
+Gholdengo @ Air Balloon
+Ability: Good as Gold
+Tera Type: Flying
+EVs: 252 SpA / 4 SpD / 252 Spe
+Timid Nature
+IVs: 0 Atk
+- Make It Rain
+- Shadow Ball
+- Nasty Plot
+- Recover
+
+Dragapult @ Choice Specs
+Ability: Infiltrator
+Tera Type: Ghost
+EVs: 252 SpA / 4 SpD / 252 Spe
+Timid Nature
+IVs: 0 Atk
+- Draco Meteor
+- Shadow Ball
+- Flamethrower
+- U-turn`,
       members: {
         create: [
           {
