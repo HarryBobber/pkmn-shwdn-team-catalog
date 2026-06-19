@@ -1,7 +1,13 @@
 import express from "express";
+import cors from "cors";
 import { prisma } from "./db";
 
 const app = express();
+
+// Allow the browser frontend (a different origin: localhost:5173) to call this
+// API. Without CORS headers, the browser blocks cross-origin requests. The team
+// data is public, so allowing all origins is fine here.
+app.use(cors());
 
 // The backend runs on a different port than the Vite frontend (which uses 5173).
 // 3000 is a conventional choice for a Node/Express API in development.
