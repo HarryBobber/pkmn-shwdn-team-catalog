@@ -31,3 +31,6 @@ yarn-error.log*
 .idea/
 .DS_Store
 *.swp
+
+# WSL/Windows metadata noise
+*:Zone.Identifier

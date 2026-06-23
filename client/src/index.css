@@ -1,14 +1,24 @@
+/* Global reset for the pixel showcase. The page itself is near-black; the fixed
+   battle backdrop (see Backdrop.tsx) paints over it. `image-rendering: pixelated`
+   keeps the retro feel crisp. Fonts are loaded in index.html from Google Fonts. */
 :root {
-  font-family: system-ui, 'Segoe UI', Roboto, sans-serif;
-  line-height: 1.5;
-  color: #1f2430;
-  background: #f5f5f7;
+  font-family: 'VT323', monospace;
+  color: #f5f3ff;
+  background: #06060e;
+  image-rendering: pixelated;
 }
 
 * {
   box-sizing: border-box;
 }
 
+html,
 body {
   margin: 0;
+  padding: 0;
+  background: #06060e;
+}
+
+button {
+  font-family: inherit;
 }

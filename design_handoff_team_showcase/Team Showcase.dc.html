@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+  <style>
+    *{ box-sizing:border-box; }
+    html,body{ margin:0; padding:0; background:#06060e; }
+    button{ font-family:inherit; }
+    @keyframes spin { from{ transform:rotateY(0deg); } to{ transform:rotateY(360deg); } }
+    @keyframes bob { 0%,100%{ transform:translateY(-5px); } 50%{ transform:translateY(5px); } }
+    @keyframes shadowpulse { 0%,100%{ transform:translateX(-50%) scaleX(1); opacity:.45; } 50%{ transform:translateX(-50%) scaleX(.82); opacity:.28; } }
+    @keyframes blink { 0%,60%{ opacity:1; } 61%,100%{ opacity:.25; } }
+    @keyframes drift { from{ background-position:0 0; } to{ background-position:80px 0; } }
+    @keyframes twinkle { 0%,100%{ opacity:.9; } 50%{ opacity:.35; } }
+  </style>
+</helmet>
+
+<div style="position:relative; min-height:100vh; padding:32px 28px 240px; font-family:'VT323',monospace; image-rendering:pixelated; overflow:hidden;">
+
+  <!-- ===== GEN-5 STYLE PIXEL BATTLE BACKDROP ===== -->
+  <div style="position:fixed; inset:0; z-index:0; overflow:hidden; background:linear-gradient(180deg,#0a0a1c 0%,#16133a 38%,#241a52 53%,#3a2360 57%,#1d1430 78%,#120d22 100%);">
+    <!-- star field -->
+    <div style="position:absolute; top:8%; left:10%; width:2px; height:2px; background:#fff; box-shadow:60px 20px #fff,160px 60px #c9c2ff,260px 12px #fff,360px 70px #fff,470px 30px #b9b0ff,560px 90px #fff,680px 24px #fff,780px 64px #c9c2ff,900px 18px #fff,1010px 80px #fff,120px 110px #fff,420px 120px #b9b0ff,720px 130px #fff,980px 116px #c9c2ff; animation:twinkle 3.4s steps(2) infinite;"></div>
+    <!-- horizon glow line -->
+    <div style="position:absolute; left:0; right:0; top:56.5%; height:2px; background:#7a5bff; box-shadow:0 0 20px 4px rgba(122,91,255,0.55);"></div>
+    <!-- battle platform ellipses -->
+    <div style="position:absolute; left:50%; top:53%; width:420px; height:60px; transform:translateX(-50%); border-radius:50%; border:3px solid rgba(140,110,255,0.30); background:radial-gradient(closest-side, rgba(90,70,200,0.18), transparent);"></div>
+    <!-- perspective grid floor -->
+    <div style="position:absolute; left:-30%; right:-30%; bottom:0; height:44%; transform:perspective(440px) rotateX(66deg); transform-origin:bottom center; background-color:#0c0920; background-image:repeating-linear-gradient(90deg, transparent 0, transparent 46px, rgba(124,98,235,0.45) 46px, rgba(124,98,235,0.45) 48px), repeating-linear-gradient(0deg, transparent 0, transparent 46px, rgba(124,98,235,0.30) 46px, rgba(124,98,235,0.30) 48px); animation:drift 6s linear infinite; box-shadow:inset 0 60px 80px rgba(8,6,20,0.7);"></div>
+    <div style="position:absolute; inset:0; background:radial-gradient(120% 80% at 50% 30%, transparent 40%, rgba(6,6,14,0.65) 100%);"></div>
+  </div>
+
+  <sc-if value="{{ scanlines }}" hint-placeholder-val="{{ true }}">
+    <div style="position:fixed; inset:0; z-index:200; pointer-events:none; background:repeating-linear-gradient(0deg, rgba(0,0,0,0.20) 0px, rgba(0,0,0,0.20) 1px, transparent 2px, transparent 3px); mix-blend-mode:multiply;"></div>
+  </sc-if>
+
+  <!-- Title bar -->
+  <div style="position:relative; z-index:1; max-width:1080px; margin:0 auto 16px; border:3px solid #4b4870; background:linear-gradient(180deg,#23213a,#16142a); box-shadow:0 0 0 3px #0b0b14, 6px 6px 0 rgba(0,0,0,0.5); padding:15px 20px; display:flex; align-items:center; justify-content:space-between; gap:16px;">
+    <div style="display:flex; align-items:baseline; gap:12px; flex:1;">
+      <span style="font-family:'Press Start 2P'; font-size:12px; color:#f5f3ff; letter-spacing:1px;">TRAINER</span>
+      <span style="font-family:'Press Start 2P'; font-size:12px; color:#ffd24a; letter-spacing:1px;">{{ trainerName }}</span>
+    </div>
+    <span style="font-family:'Press Start 2P'; font-size:11px; color:#7af0c8; letter-spacing:1px;">{{ currentLabel }}</span>
+    <div style="display:flex; align-items:center; gap:9px; flex:1; justify-content:flex-end;">
+      <span style="font-family:'Press Start 2P'; font-size:10px; color:#8e8ab8;">TEAM</span>
+      <span style="font-family:'Press Start 2P'; font-size:12px; color:#7af0c8;">{{ teamCount }}/6</span>
+    </div>
+  </div>
+
+  <!-- ===== TEAM SELECTOR ===== -->
+  <div style="position:relative; z-index:1; max-width:1080px; margin:0 auto 22px; display:flex; align-items:stretch; gap:10px;">
+    <button onClick="{{ prevTeam }}" style="flex:0 0 auto; width:42px; border:3px solid #3a385c; background:#14122a; color:#bdb8ea; font-size:20px; box-shadow:0 0 0 3px #0b0b14; cursor:pointer;">◀</button>
+    <div style="flex:1; display:flex; gap:10px; overflow-x:auto; padding:3px 1px;">
+      <sc-for list="{{ teamTabs }}" as="tab" hint-placeholder-count="3">
+        <button onClick="{{ tab.select }}" style="flex:0 0 auto; border:3px solid {{ tab.border }}; background:{{ tab.bg }}; box-shadow:0 0 0 3px #0b0b14, {{ tab.shadow }}; transform:{{ tab.lift }}; transition:transform .1s ease; cursor:pointer; padding:10px 14px; display:flex; flex-direction:column; gap:9px; align-items:flex-start;">
+          <span style="font-family:'Press Start 2P'; font-size:9px; color:{{ tab.labelColor }}; letter-spacing:0.5px; white-space:nowrap;">{{ tab.label }}</span>
+          <div style="display:flex; gap:4px;">
+            <sc-for list="{{ tab.dots }}" as="d" hint-placeholder-count="6">
+              <span style="width:10px; height:10px; background:{{ d }}; border:1px solid #0b0b14;"></span>
+            </sc-for>
+          </div>
+        </button>
+      </sc-for>
+    </div>
+    <button onClick="{{ nextTeam }}" style="flex:0 0 auto; width:42px; border:3px solid #3a385c; background:#14122a; color:#bdb8ea; font-size:20px; box-shadow:0 0 0 3px #0b0b14; cursor:pointer;">▶</button>
+  </div>
+
+  <!-- ===== TEAM GRID 2 x 3 ===== -->
+  <div style="position:relative; z-index:1; max-width:1080px; margin:0 auto; display:grid; grid-template-columns:repeat(3,1fr); gap:24px;">
+    <sc-for list="{{ slots }}" as="mon" hint-placeholder-count="6">
+      <div style="--type:{{ mon.accent }}; position:relative; border:3px solid #3a385c; background:linear-gradient(180deg, rgba(25,23,48,0.93), rgba(18,16,36,0.93)); box-shadow:{{ mon.boxShadow }}; padding:18px 16px 16px; z-index:{{ mon.cardZ }}; transform:{{ mon.lift }}; transition:transform .12s ease, box-shadow .12s ease; cursor:pointer;"
+        onMouseEnter="{{ mon.enter }}" onMouseLeave="{{ leave }}">
+
+        <!-- crystal scene -->
+        <div style="height:168px; perspective:680px; display:flex; align-items:center; justify-content:center; position:relative;">
+          <div style="position:absolute; bottom:14px; left:50%; width:88px; height:16px; border-radius:50%; background:radial-gradient(closest-side, color-mix(in srgb, var(--type) 70%, #000) , transparent); filter:blur(2px); animation:shadowpulse 3.2s ease-in-out infinite;"></div>
+          <div style="animation:bob 3.2s ease-in-out infinite; transform-style:preserve-3d;">
+            <div style="transform:{{ mon.tilt }}; transform-style:preserve-3d; transition:transform .15s ease;">
+              <div style="position:relative; width:90px; height:90px; transform-style:preserve-3d; transform:scaleY(1.22); animation:spin 4.6s linear infinite; animation-play-state:{{ mon.play }};">
+                <div style="position:absolute; inset:0; background:color-mix(in srgb, var(--type) 52%, transparent); border:1px solid color-mix(in srgb, var(--type) 75%, #fff); box-shadow:inset 0 0 18px color-mix(in srgb, var(--type) 80%, #fff); transform:translateZ(45px); filter:brightness(1.05);"></div>
+                <div style="position:absolute; inset:0; background:color-mix(in srgb, var(--type) 52%, transparent); border:1px solid color-mix(in srgb, var(--type) 75%, #fff); box-shadow:inset 0 0 18px color-mix(in srgb, var(--type) 80%, #fff); transform:rotateY(180deg) translateZ(45px); filter:brightness(0.8);"></div>
+                <div style="position:absolute; inset:0; background:color-mix(in srgb, var(--type) 52%, transparent); border:1px solid color-mix(in srgb, var(--type) 75%, #fff); box-shadow:inset 0 0 18px color-mix(in srgb, var(--type) 80%, #fff); transform:rotateY(90deg) translateZ(45px); filter:brightness(0.92);"></div>
+                <div style="position:absolute; inset:0; background:color-mix(in srgb, var(--type) 52%, transparent); border:1px solid color-mix(in srgb, var(--type) 75%, #fff); box-shadow:inset 0 0 18px color-mix(in srgb, var(--type) 80%, #fff); transform:rotateY(-90deg) translateZ(45px); filter:brightness(0.92);"></div>
+                <div style="position:absolute; inset:0; background:color-mix(in srgb, var(--type) 60%, transparent); border:1px solid color-mix(in srgb, var(--type) 80%, #fff); box-shadow:inset 0 0 18px color-mix(in srgb, var(--type) 90%, #fff); transform:rotateX(90deg) translateZ(45px); filter:brightness(1.35);"></div>
+                <div style="position:absolute; inset:0; background:color-mix(in srgb, var(--type) 45%, transparent); border:1px solid color-mix(in srgb, var(--type) 65%, #fff); transform:rotateX(-90deg) translateZ(45px); filter:brightness(0.6);"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- name + types -->
+        <div style="text-align:center; margin-top:6px;">
+          <div style="font-family:'Press Start 2P'; font-size:12px; color:#f5f3ff; line-height:1.5; text-shadow:2px 2px 0 #000;">{{ mon.name }}</div>
+          <div style="display:flex; gap:6px; justify-content:center; margin-top:9px;">
+            <sc-for list="{{ mon.chips }}" as="t" hint-placeholder-count="2">
+              <span style="font-family:'Press Start 2P'; font-size:8px; color:#0b0b14; background:{{ t.color }}; border:2px solid #0b0b14; padding:4px 7px; letter-spacing:0.5px;">{{ t.name }}</span>
+            </sc-for>
+          </div>
+          <div style="margin-top:9px; font-size:18px; color:#8e8ab8; letter-spacing:0.5px;">TERA <span style="color:{{ mon.teraColor }};">◆ {{ mon.tera }}</span></div>
+        </div>
+
+        <!-- hover info textbox -->
+        <div style="position:absolute; left:50%; top:120px; width:330px; z-index:60; pointer-events:none; opacity:{{ mon.panelOpacity }}; transform:{{ mon.panelTransform }}; transition:opacity .16s ease, transform .16s ease; border:3px solid var(--type); background:rgba(12,11,24,0.88); backdrop-filter:blur(3px); box-shadow:0 0 0 3px #0b0b14, 6px 6px 0 rgba(0,0,0,0.55), 0 0 30px color-mix(in srgb, var(--type) 50%, transparent); padding:14px 14px 15px;">
+
+          <div style="display:flex; align-items:center; justify-content:space-between; border-bottom:2px solid #34325a; padding-bottom:8px; margin-bottom:9px;">
+            <span style="font-family:'Press Start 2P'; font-size:10px; color:#f5f3ff;">{{ mon.name }}</span>
+            <span style="font-size:18px; color:{{ mon.teraColor }};">◆{{ mon.tera }}</span>
+          </div>
+
+          <div style="display:flex; flex-direction:column; gap:3px; font-size:18px; line-height:1.25; margin-bottom:10px;">
+            <div style="display:flex; justify-content:space-between;"><span style="color:#7d7aa6;">ITEM</span><span style="color:#ffe08a;">{{ mon.item }}</span></div>
+            <div style="display:flex; justify-content:space-between;"><span style="color:#7d7aa6;">ABILITY</span><span style="color:#9fe8ff;">{{ mon.ability }}</span></div>
+            <div style="display:flex; justify-content:space-between;"><span style="color:#7d7aa6;">NATURE</span><span style="color:#f5a3d0;">{{ mon.nature }}</span></div>
+          </div>
+
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:5px; margin-bottom:11px;">
+            <sc-for list="{{ mon.moves }}" as="mv" hint-placeholder-count="4">
+              <span style="font-size:16px; color:#e6e4ff; background:#1c1a36; border:2px solid #34325a; border-left:4px solid var(--type); padding:4px 7px; line-height:1.15;">{{ mv }}</span>
+            </sc-for>
+          </div>
+
+          <div style="display:flex; flex-direction:column; gap:4px;">
+            <sc-for list="{{ mon.stats }}" as="st" hint-placeholder-count="6">
+              <div style="display:flex; align-items:center; gap:8px;">
+                <span style="width:30px; font-family:'Press Start 2P'; font-size:7px; color:#9794c2;">{{ st.label }}</span>
+                <div style="flex:1; height:9px; background:#1c1a36; border:1px solid #34325a; overflow:hidden;">
+                  <div style="height:100%; width:{{ st.pct }}%; background:{{ st.color }};"></div>
+                </div>
+                <span style="width:26px; text-align:right; font-size:16px; color:#e6e4ff;">{{ st.val }}</span>
+                <span style="width:34px; text-align:right; font-size:14px; color:#6f6c98;">{{ st.evLabel }}</span>
+              </div>
+            </sc-for>
+          </div>
+          <div style="margin-top:8px; font-size:14px; color:#6f6c98; letter-spacing:0.5px; border-top:2px solid #34325a; padding-top:7px;">IVs {{ mon.ivLabel }} · BST {{ mon.bst }}</div>
+        </div>
+
+      </div>
+    </sc-for>
+  </div>
+
+  <div style="position:relative; z-index:1; max-width:1080px; margin:30px auto 0; text-align:center; font-family:'Press Start 2P'; font-size:9px; color:#6a67a0; line-height:1.8;">
+    <span style="animation:blink 1.1s steps(1) infinite;">▸</span> HOVER A POKEMON TO INSPECT &nbsp;·&nbsp; ◀ ▶ SWITCH TEAM
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1140,&quot;height&quot;:920},&quot;trainerName&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;RED&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;accent&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;type&quot;,&quot;options&quot;:[&quot;type&quot;,&quot;cyan&quot;,&quot;gold&quot;],&quot;tsType&quot;:&quot;string&quot;},&quot;scanlines&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;}}">
+class Component extends DCLogic {
+  state = { hovered: -1, team: 0 };
+
+  TYPE_COLORS = {
+    Normal:'#a8a878', Fire:'#f0803c', Water:'#5a8df0', Electric:'#f7cf3a',
+    Grass:'#74c84f', Ice:'#8fd4d4', Fighting:'#d13f33', Poison:'#a64fb0',
+    Ground:'#e0bf5a', Flying:'#9d8df0', Psychic:'#f55c8c', Bug:'#a3bf2a',
+    Rock:'#bda33a', Ghost:'#7159a8', Dragon:'#6e3ef5', Dark:'#6b5848',
+    Steel:'#aab0c8', Fairy:'#ee93b0'
+  };
+  STAT_COLORS = { HP:'#7ae36b', ATK:'#f7625a', DEF:'#f9c74f', SPA:'#4d96ff', SPD:'#43c6ac', SPE:'#f15bb5' };
+
+  TEAMS = [
+    { label:'OU BALANCE', members:[
+      { name:'GREAT TUSK', types:['Ground','Fighting'], tera:'Steel', item:'Booster Energy', ability:'Protosynthesis', nature:'Jolly',
+        moves:['Headlong Rush','Close Combat','Rapid Spin','Stealth Rock'],
+        stats:{HP:115,ATK:131,DEF:131,SPA:53,SPD:53,SPE:87}, evs:{HP:0,ATK:252,DEF:4,SPA:0,SPD:0,SPE:252}, atkIV:31 },
+      { name:'KINGAMBIT', types:['Dark','Steel'], tera:'Fairy', item:'Leftovers', ability:'Supreme Overlord', nature:'Adamant',
+        moves:['Kowtow Cleave','Sucker Punch','Iron Head','Swords Dance'],
+        stats:{HP:100,ATK:135,DEF:120,SPA:60,SPD:85,SPE:50}, evs:{HP:252,ATK:252,DEF:0,SPA:0,SPD:4,SPE:0}, atkIV:31 },
+      { name:'DRAGAPULT', types:['Dragon','Ghost'], tera:'Dragon', item:'Choice Specs', ability:'Clear Body', nature:'Timid',
+        moves:['Draco Meteor','Shadow Ball','Flamethrower','U-turn'],
+        stats:{HP:88,ATK:120,DEF:75,SPA:100,SPD:75,SPE:142}, evs:{HP:0,ATK:0,DEF:4,SPA:252,SPD:0,SPE:252}, atkIV:0 },
+      { name:'GHOLDENGO', types:['Steel','Ghost'], tera:'Water', item:'Air Balloon', ability:'Good as Gold', nature:'Timid',
+        moves:['Make It Rain','Shadow Ball','Nasty Plot','Recover'],
+        stats:{HP:87,ATK:60,DEF:95,SPA:133,SPD:91,SPE:84}, evs:{HP:0,ATK:0,DEF:0,SPA:252,SPD:4,SPE:252}, atkIV:0 },
+      { name:'SLOWKING-G', types:['Poison','Psychic'], tera:'Water', item:'Heavy-Duty Boots', ability:'Regenerator', nature:'Calm',
+        moves:['Future Sight','Sludge Bomb','Chilly Reception','Flamethrower'],
+        stats:{HP:95,ATK:65,DEF:80,SPA:110,SPD:110,SPE:30}, evs:{HP:252,ATK:0,DEF:0,SPA:16,SPD:240,SPE:0}, atkIV:0 },
+      { name:'LANDO-T', types:['Ground','Flying'], tera:'Steel', item:'Rocky Helmet', ability:'Intimidate', nature:'Impish',
+        moves:['Earthquake','U-turn','Stealth Rock','Taunt'],
+        stats:{HP:89,ATK:145,DEF:90,SPA:105,SPD:80,SPE:91}, evs:{HP:252,ATK:4,DEF:252,SPA:0,SPD:0,SPE:0}, atkIV:31 }
+    ]},
+    { label:'RAIN', members:[
+      { name:'PELIPPER', types:['Water','Flying'], tera:'Ground', item:'Damp Rock', ability:'Drizzle', nature:'Bold',
+        moves:['Hurricane','Surf','U-turn','Roost'],
+        stats:{HP:60,ATK:50,DEF:100,SPA:95,SPD:70,SPE:65}, evs:{HP:248,ATK:0,DEF:200,SPA:0,SPD:0,SPE:60}, atkIV:0 },
+      { name:'BARRASKEWDA', types:['Water'], tera:'Water', item:'Choice Band', ability:'Swift Swim', nature:'Adamant',
+        moves:['Liquidation','Close Combat','Flip Turn','Aqua Jet'],
+        stats:{HP:61,ATK:123,DEF:60,SPA:60,SPD:50,SPE:136}, evs:{HP:0,ATK:252,DEF:4,SPA:0,SPD:0,SPE:252}, atkIV:31 },
+      { name:'ARCHALUDON', types:['Steel','Dragon'], tera:'Flying', item:'Assault Vest', ability:'Stamina', nature:'Modest',
+        moves:['Electro Shot','Draco Meteor','Flash Cannon','Body Press'],
+        stats:{HP:90,ATK:105,DEF:130,SPA:125,SPD:65,SPE:85}, evs:{HP:96,ATK:0,DEF:0,SPA:252,SPD:0,SPE:160}, atkIV:0 },
+      { name:'FERROTHORN', types:['Grass','Steel'], tera:'Water', item:'Leftovers', ability:'Iron Barbs', nature:'Relaxed',
+        moves:['Power Whip','Knock Off','Spikes','Leech Seed'],
+        stats:{HP:74,ATK:94,DEF:131,SPA:54,SPD:116,SPE:20}, evs:{HP:252,ATK:0,DEF:88,SPA:0,SPD:168,SPE:0}, atkIV:31 },
+      { name:'RAGING BOLT', types:['Electric','Dragon'], tera:'Fairy', item:'Booster Energy', ability:'Protosynthesis', nature:'Modest',
+        moves:['Thunderclap','Draco Meteor','Thunderbolt','Calm Mind'],
+        stats:{HP:125,ATK:73,DEF:91,SPA:137,SPD:89,SPE:75}, evs:{HP:64,ATK:0,DEF:0,SPA:252,SPD:0,SPE:192}, atkIV:0 },
+      { name:'OGERPON-W', types:['Grass','Water'], tera:'Water', item:'Wellspring Mask', ability:'Water Absorb', nature:'Jolly',
+        moves:['Ivy Cudgel','Power Whip','Horn Leech','Swords Dance'],
+        stats:{HP:80,ATK:120,DEF:84,SPA:60,SPD:96,SPE:110}, evs:{HP:0,ATK:252,DEF:4,SPA:0,SPD:0,SPE:252}, atkIV:31 }
+    ]},
+    { label:'HYPER OFFENSE', members:[
+      { name:'ROARING MOON', types:['Dragon','Dark'], tera:'Flying', item:'Booster Energy', ability:'Protosynthesis', nature:'Jolly',
+        moves:['Dragon Dance','Knock Off','Acrobatics','Earthquake'],
+        stats:{HP:105,ATK:139,DEF:71,SPA:55,SPD:101,SPE:119}, evs:{HP:0,ATK:252,DEF:4,SPA:0,SPD:0,SPE:252}, atkIV:31 },
+      { name:'IRON VALIANT', types:['Fairy','Fighting'], tera:'Ghost', item:'Booster Energy', ability:'Quark Drive', nature:'Naive',
+        moves:['Moonblast','Close Combat','Knock Off','Encore'],
+        stats:{HP:74,ATK:130,DEF:90,SPA:120,SPD:60,SPE:116}, evs:{HP:0,ATK:64,DEF:0,SPA:192,SPD:0,SPE:252}, atkIV:31 },
+      { name:'WALKING WAKE', types:['Water','Dragon'], tera:'Water', item:'Choice Specs', ability:'Protosynthesis', nature:'Timid',
+        moves:['Hydro Steam','Draco Meteor','Flamethrower','Flip Turn'],
+        stats:{HP:99,ATK:83,DEF:91,SPA:125,SPD:83,SPE:109}, evs:{HP:0,ATK:0,DEF:4,SPA:252,SPD:0,SPE:252}, atkIV:0 },
+      { name:'DARKRAI', types:['Dark'], tera:'Poison', item:'Life Orb', ability:'Bad Dreams', nature:'Timid',
+        moves:['Dark Pulse','Sludge Bomb','Ice Beam','Nasty Plot'],
+        stats:{HP:70,ATK:90,DEF:90,SPA:135,SPD:90,SPE:125}, evs:{HP:0,ATK:0,DEF:4,SPA:252,SPD:0,SPE:252}, atkIV:0 },
+      { name:'SAMUROTT-H', types:['Water','Dark'], tera:'Dark', item:'Focus Sash', ability:'Sharpness', nature:'Adamant',
+        moves:['Ceaseless Edge','Sucker Punch','Aqua Cutter','Knock Off'],
+        stats:{HP:90,ATK:108,DEF:80,SPA:100,SPD:65,SPE:85}, evs:{HP:0,ATK:252,DEF:4,SPA:0,SPD:0,SPE:252}, atkIV:31 },
+      { name:'DRAGONITE', types:['Dragon','Flying'], tera:'Normal', item:'Heavy-Duty Boots', ability:'Multiscale', nature:'Adamant',
+        moves:['Dragon Dance','Earthquake','Ice Spinner','Roost'],
+        stats:{HP:91,ATK:134,DEF:95,SPA:100,SPD:100,SPE:80}, evs:{HP:0,ATK:252,DEF:4,SPA:0,SPD:0,SPE:252}, atkIV:31 }
+    ]}
+  ];
+
+  renderVals() {
+    const accentMode = this.props.accent ?? 'type';
+    const ORDER = ['HP','ATK','DEF','SPA','SPD','SPE'];
+    const ti = this.state.team;
+    const team = this.TEAMS[ti] || this.TEAMS[0];
+
+    const accentFor = (m) => {
+      if (accentMode === 'cyan') return 'oklch(0.78 0.16 200)';
+      if (accentMode === 'gold') return 'oklch(0.82 0.15 85)';
+      return this.TYPE_COLORS[m.types[0]] || '#9d8df0';
+    };
+
+    const slots = team.members.map((m, i) => {
+      const hv = i === this.state.hovered;
+      const accent = accentFor(m);
+      const bst = ORDER.reduce((s,k)=>s+m.stats[k],0);
+      return {
+        name: m.name, item: m.item, ability: m.ability, nature: m.nature, tera: m.tera, moves: m.moves,
+        accent,
+        teraColor: this.TYPE_COLORS[m.tera] || '#fff',
+        chips: m.types.map(t => ({ name: t.toUpperCase(), color: this.TYPE_COLORS[t] || '#888' })),
+        stats: ORDER.map(k => ({
+          label: k, val: m.stats[k],
+          pct: Math.min(100, Math.round(m.stats[k] / 200 * 100)),
+          color: this.STAT_COLORS[k],
+          evLabel: m.evs[k] > 0 ? '+' + m.evs[k] : ''
+        })),
+        ivLabel: m.atkIV === 0 ? '31/0/31/31/31/31' : 'all 31',
+        bst,
+        play: hv ? 'running' : 'paused',
+        tilt: hv ? 'rotateX(-16deg) scale(1.07)' : 'rotateX(-16deg) scale(1)',
+        lift: hv ? 'translateY(-6px)' : 'translateY(0)',
+        boxShadow: hv
+          ? '0 0 0 3px ' + accent + ', 5px 11px 0 rgba(0,0,0,0.45), 0 0 28px color-mix(in srgb, ' + accent + ' 55%, transparent)'
+          : '0 0 0 3px #0b0b14, 5px 5px 0 rgba(0,0,0,0.45)',
+        cardZ: hv ? 100 : 1,
+        panelOpacity: hv ? 1 : 0,
+        panelTransform: hv ? 'translateX(-50%) translateY(0)' : 'translateX(-50%) translateY(14px)',
+        enter: () => this.setState({ hovered: i })
+      };
+    });
+
+    const teamTabs = this.TEAMS.map((t, k) => {
+      const active = k === ti;
+      return {
+        label: t.label,
+        active,
+        dots: t.members.map(mm => this.TYPE_COLORS[mm.types[0]] || '#888'),
+        border: active ? '#ffd24a' : '#3a385c',
+        bg: active ? 'linear-gradient(180deg,#2a2746,#1c1936)' : '#14122a',
+        labelColor: active ? '#ffd24a' : '#8e8ab8',
+        lift: active ? 'translateY(-3px)' : 'translateY(0)',
+        shadow: active ? '4px 7px 0 rgba(0,0,0,0.45)' : '4px 4px 0 rgba(0,0,0,0.4)',
+        select: () => this.setState({ team: k, hovered: -1 })
+      };
+    });
+
+    const len = this.TEAMS.length;
+    return {
+      trainerName: (this.props.trainerName ?? 'RED').toUpperCase(),
+      currentLabel: team.label,
+      teamCount: team.members.length,
+      scanlines: this.props.scanlines ?? true,
+      slots,
+      teamTabs,
+      leave: () => this.setState({ hovered: -1 }),
+      prevTeam: () => this.setState(s => ({ team: (s.team + len - 1) % len, hovered: -1 })),
+      nextTeam: () => this.setState(s => ({ team: (s.team + 1) % len, hovered: -1 }))
+    };
+  }
+}
+</script>
+</body>
+</html>
