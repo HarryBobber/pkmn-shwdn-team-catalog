@@ -1,8 +1,23 @@
 import { useState } from 'react'
+import type { CSSProperties } from 'react'
 
-// Lets the owner paste their admin token to unlock write controls. The token is
-// kept in App state + localStorage. Visitors who never enter one just see the
-// read-only showcase — the token is never shipped or shown to them.
+// Owner controls that live in the title bar's right zone. Visitors see only a
+// small 🔒 button; clicking it reveals a token field. Once unlocked the owner
+// sees their status and a log-out button. The token is held in App state +
+// localStorage — it's never shipped to or shown to visitors.
+
+const pillButton: CSSProperties = {
+  fontFamily: "'Press Start 2P'",
+  fontSize: 8,
+  padding: '6px 9px',
+  border: '2px solid #4b4870',
+  background: '#14122a',
+  color: '#bdb8ea',
+  boxShadow: '0 0 0 2px #0b0b14',
+  cursor: 'pointer',
+  letterSpacing: '0.5px',
+}
+
 export function AdminBar({
   token,
   onSetToken,
@@ -10,22 +25,39 @@ export function AdminBar({
   token: string
   onSetToken: (token: string) => void
 }) {
+  const [open, setOpen] = useState(false)
   const [draft, setDraft] = useState('')
 
   if (token) {
     return (
-      <div className="admin-bar">
-        <span className="admin-bar__status">🔓 Owner mode</span>
-        <button type="button" onClick={() => onSetToken('')}>
-          Log out
+      <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
+        <span style={{ fontFamily: "'Press Start 2P'", fontSize: 8, color: '#7af0c8' }}>
+          OWNER
+        </span>
+        <button type="button" style={pillButton} onClick={() => onSetToken('')}>
+          LOG OUT
         </button>
       </div>
     )
   }
 
+  if (!open) {
+    return (
+      <button
+        type="button"
+        style={pillButton}
+        onClick={() => setOpen(true)}
+        aria-label="Owner login"
+        title="Owner login"
+      >
+        🔒
+      </button>
+    )
+  }
+
   return (
     <form
-      className="admin-bar"
+      style={{ display: 'flex', alignItems: 'center', gap: 6 }}
       onSubmit={(e) => {
         e.preventDefault()
         if (draft.trim()) onSetToken(draft.trim())
@@ -33,11 +65,23 @@ export function AdminBar({
     >
       <input
         type="password"
-        placeholder="Admin token (owner only)"
+        autoFocus
+        placeholder="Admin token"
         value={draft}
         onChange={(e) => setDraft(e.target.value)}
+        style={{
+          fontFamily: "'VT323', monospace",
+          fontSize: 16,
+          color: '#f5f3ff',
+          background: '#14122a',
+          border: '2px solid #3a385c',
+          padding: '4px 8px',
+          width: 150,
+        }}
       />
-      <button type="submit">Unlock</button>
+      <button type="submit" style={pillButton}>
+        UNLOCK
+      </button>
     </form>
   )
 }
